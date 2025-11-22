@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astrobiology Probability Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌌 Astrobiology Probability Calculator</h1>
+            <p>Explore the likelihood of life in the universe using modern exoplanet data and Monte Carlo simulations</p>
+        </header>
+
+        <div class="calculator-grid">
+            <!-- Drake Equation Parameters -->
+            <div class="panel">
+                <h2>Drake Equation Parameters</h2>
+                <div class="parameter-group">
+                    <label for="starFormationRate">Star Formation Rate (stars/year)</label>
+                    <input type="range" id="starFormationRate" min="1" max="50" value="7" step="0.1">
+                    <span class="value-display" id="starFormationRateValue">7</span>
+                </div>
+                
+                <div class="parameter-group">
+                    <label for="planetaryFraction">Fraction of stars with planets</label>
+                    <input type="range" id="planetaryFraction" min="0.1" max="1" value="0.8" step="0.01">
+                    <span class="value-display" id="planetaryFractionValue">0.8</span>
+                </div>
+                
+                <div class="parameter-group">
+                    <label for="habitablePlanets">Habitable planets per system</label>
+                    <input type="range" id="habitablePlanets" min="0.01" max="5" value="0.2" step="0.01">
+                    <span class="value-display" id="habitablePlanetsValue">0.2</span>
+                </div>
+                
+                <div class="parameter-group">
+                    <label for="lifeEmergence">Probability life emerges</label>
+                    <input type="range" id="lifeEmergence" min="0.001" max="1" value="0.1" step="0.001">
+                    <span class="value-display" id="lifeEmergenceValue">0.1</span>
+                </div>
+                
+                <div class="parameter-group">
+                    <label for="intelligentLife">Probability of intelligent life</label>
+                    <input type="range" id="intelligentLife" min="0.001" max="1" value="0.01" step="0.001">
+                    <span class="value-display" id="intelligentLifeValue">0.01</span>
+                </div>
+                
+                <div class="parameter-group">
+                    <label for="communicatingLife">Probability of communication</label>
+                    <input type="range" id="communicatingLife" min="0.001" max="1" value="0.1" step="0.001">
+                    <span class="value-display" id="communicatingLifeValue">0.1</span>
+                </div>
+                
+                <div class="parameter-group">
+                    <label for="civilizationLifetime">Civilization lifetime (years)</label>
+                    <input type="range" id="civilizationLifetime" min="100" max="1000000" value="10000" step="100">
+                    <span class="value-display" id="civilizationLifetimeValue">10000</span>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="panel">
+                <h2>Probability Results</h2>
+                <div class="result-display">
+                    <div class="result-item">
+                        <h3>Communicating Civilizations</h3>
+                        <div class="result-value" id="drakeResult">0</div>
+                    </div>
+                    <div class="result-item">
+                        <h3>Nearest Civilization Distance</h3>
+                        <div class="result-value" id="nearestDistance">∞ light-years</div>
+                    </div>
+                    <div class="result-item">
+                        <h3>Detection Probability (50 ly)</h3>
+                        <div class="result-value" id="detectionProb">0%</div>
+                    </div>
+                </div>
+                
+                <button id="runSimulation" class="simulation-btn">Run Monte Carlo Simulation</button>
+                <div id="simulationStatus" class="simulation-status"></div>
+            </div>
+        </div>
+
+        <!-- Visualization Panels -->
+        <div class="visualization-grid">
+            <div class="panel">
+                <h2>Probability Distribution</h2>
+                <canvas id="probabilityChart"></canvas>
+            </div>
+            
+            <div class="panel">
+                <h2>Exoplanet Data Integration</h2>
+                <canvas id="exoplanetChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Biosignature Analysis -->
+        <div class="panel">
+            <h2>JWST Biosignature Targets</h2>
+            <div id="biosignatureTargets"></div>
+        </div>
+
+        <!-- Multi-Scenario Analysis -->
+        <div class="panel">
+            <h2>Multi-Scenario Analysis</h2>
+            <div class="scenario-controls">
+                <button id="optimisticScenario" class="scenario-btn active">Optimistic</button>
+                <button id="pessimisticScenario" class="scenario-btn">Pessimistic</button>
+                <button id="historicalScenario" class="scenario-btn">Historical</button>
+                <button id="customScenario" class="scenario-btn">Custom</button>
+            </div>
+            <div class="scenario-comparison">
+                <canvas id="scenarioChart"></canvas>
+            </div>
+            <div id="scenarioResults" class="scenario-results"></div>
+        </div>
+
+        <!-- 3D Galaxy Visualization -->
+        <div class="panel full-width">
+            <h2>3D Galaxy Civilization Map</h2>
+            <div class="galaxy-controls">
+                <button id="animateGalaxy" class="galaxy-btn">Animate Galaxy</button>
+                <button id="showCommunication" class="galaxy-btn">Show Communication</button>
+                <button id="resetGalaxyView" class="galaxy-btn">Reset View</button>
+                <div class="galaxy-info">
+                    <span>Time: <span id="galaxyTime">0</span> years</span>
+                    <span>Active Civilizations: <span id="activeCivs">0</span></span>
+                </div>
+            </div>
+            <div id="galaxyContainer" class="galaxy-container"></div>
+        </div>
+
+        <!-- SETI Strategy Optimizer -->
+        <div class="panel">
+            <h2>SETI Strategy Optimizer</h2>
+            <div class="seti-controls">
+                <div class="resource-allocation">
+                    <h3>Observation Time Allocation</h3>
+                    <div class="allocation-slider">
+                        <label>Radio Telescopes (hours/year)</label>
+                        <input type="range" id="radioTime" min="0" max="8760" value="2000">
+                        <span id="radioTimeValue">2000</span>
+                    </div>
+                    <div class="allocation-slider">
+                        <label>Optical SETI (hours/year)</label>
+                        <input type="range" id="opticalTime" min="0" max="8760" value="1000">
+                        <span id="opticalTimeValue">1000</span>
+                    </div>
+                    <div class="allocation-slider">
+                        <label>Technosignature Search (hours/year)</label>
+                        <input type="range" id="technoTime" min="0" max="8760" value="500">
+                        <span id="technoTimeValue">500</span>
+                    </div>
+                </div>
+                <button id="optimizeStrategy" class="optimization-btn">Optimize Strategy</button>
+            </div>
+            <div class="seti-results">
+                <canvas id="setiChart"></canvas>
+                <div id="setiScore" class="seti-score">Detection Score: 0</div>
+            </div>
+        </div>
+
+        <!-- Rare Earth Factors -->
+        <div class="panel">
+            <h2>Rare Earth Factor Analysis</h2>
+            <div class="rare-earth-factors">
+                <div class="factor-group">
+                    <h3>Planetary System Requirements</h3>
+                    <div class="factor-item">
+                        <label>Jupiter-like protector</label>
+                        <input type="range" id="jupiterProtector" min="0" max="1" value="0.1" step="0.01">
+                        <span class="factor-value" id="jupiterProtectorValue">0.1</span>
+                    </div>
+                    <div class="factor-item">
+                        <label>Large moon stabilizer</label>
+                        <input type="range" id="largeMoon" min="0" max="1" value="0.05" step="0.01">
+                        <span class="factor-value" id="largeMoonValue">0.05</span>
+                    </div>
+                    <div class="factor-item">
+                        <label>Plate tectonics</label>
+                        <input type="range" id="plateTectonics" min="0" max="1" value="0.2" step="0.01">
+                        <span class="factor-value" id="plateTectonicsValue">0.2</span>
+                    </div>
+                </div>
+                <div class="factor-group">
+                    <h3>Galactic Environment</h3>
+                    <div class="factor-item">
+                        <label>Galactic habitable zone</label>
+                        <input type="range" id="galacticHZ" min="0" max="1" value="0.3" step="0.01">
+                        <span class="factor-value" id="galacticHZValue">0.3</span>
+                    </div>
+                    <div class="factor-item">
+                        <label>Avoid gamma-ray bursts</label>
+                        <input type="range" id="gammaRayBursts" min="0" max="1" value="0.8" step="0.01">
+                        <span class="factor-value" id="gammaRayBurstsValue">0.8</span>
+                    </div>
+                    <div class="factor-item">
+                        <label>Metal-rich environment</label>
+                        <input type="range" id="metalRich" min="0" max="1" value="0.4" step="0.01">
+                        <span class="factor-value" id="metalRichValue">0.4</span>
+                    </div>
+                </div>
+            </div>
+            <div class="rare-earth-result">
+                <h3>Rare Earth Probability: <span id="rareEarthProb">0.0048%</span></h3>
+                <canvas id="rareEarthChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="calculator.js"></script>
+    <script src="exoplanet-data.js"></script>
+    <script src="monte-carlo.js"></script>
+    <script src="multi-scenario.js"></script>
+    <script src="galaxy-3d.js"></script>
+    <script src="seti-optimizer.js"></script>
+    <script src="rare-earth.js"></script>
+</body>
+</html>
